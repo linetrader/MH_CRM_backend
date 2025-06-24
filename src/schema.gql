@@ -1,0 +1,82 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: ID!
+  username: String!
+  firstname: String!
+  lastname: String!
+  email: String!
+  password: String!
+  status: String
+  email_verified: Boolean!
+  referrer: String
+  walletId: String
+
+  """User Level"""
+  userLevel: Float!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetUsersResponse {
+  data: [User!]!
+  totalUsers: Int!
+}
+
+type UserDB {
+  id: ID!
+  username: String
+  phonenumber: String!
+  sex: String
+  incomepath: String
+  creatorname: String
+  memo: String
+  type: String!
+  manager: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UserDBPagination {
+  users: [UserDB!]!
+  totalUsers: Int!
+}
+
+type Query {
+  getUserInfo: User!
+
+  """Get users under my network"""
+  getUsersUnderMyNetwork(limit: Int! = 10, page: Int! = 1): GetUsersResponse!
+  findAllUsers(limit: Int, offset: Int): UserDBPagination!
+  findUserByPhone(phonenumber: String!): UserDB
+}
+
+type Mutation {
+  register(email: String!, username: String!, firstname: String!, lastname: String!, password: String!, referrer: String): String!
+
+  """Delete user by ID"""
+  deleteUser(userId: String!): String!
+  login(email: String!, password: String!): String!
+
+  """Update user details"""
+  updateUser(userId: String!, username: String, firstname: String, lastname: String, email: String, status: String, referrer: String, userLevel: Int): String!
+
+  """Change user password"""
+  changePassword(newPassword: String!): String!
+  createUserDB(createUserInput: CreateUserInput!): UserDB
+  deleteUserDB(id: String!): Boolean!
+  updateUserDB(id: String!, username: String, phonenumber: String, sex: String, incomepath: String, memo: String, type: String, manager: String): UserDB!
+}
+
+input CreateUserInput {
+  username: String
+  phonenumber: String!
+  sex: String
+  incomepath: String
+  creatorname: String
+  memo: String
+  type: String!
+  manager: String
+}
