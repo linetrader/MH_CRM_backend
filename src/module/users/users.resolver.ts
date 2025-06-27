@@ -44,6 +44,14 @@ export class UsersResolver {
     return new GetUsersResponse(users, totalUsers);
   }
 
+  @Query(() => [String], { description: 'Get usernames under my network' }) // ✅ 수정
+  async getUsernamesUnderMyNetwork(@Context() context: any): Promise<string[]> {
+    const user = context.req.user;
+    if (!user?.id) throw new UnauthorizedException('User is not authenticated');
+
+    return await this.usersService.getUsernamesUnderMyNetwork(user.id);
+  }
+
   @Mutation(() => String)
   async register(
     @Args('email') email: string,

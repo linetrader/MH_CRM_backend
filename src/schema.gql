@@ -49,6 +49,9 @@ type Query {
 
   """Get users under my network"""
   getUsersUnderMyNetwork(limit: Int! = 10, page: Int! = 1): GetUsersResponse!
+
+  """Get usernames under my network"""
+  getUsernamesUnderMyNetwork: [String!]!
   findAllUsers(limit: Int, offset: Int): UserDBPagination!
   findUserByPhone(phonenumber: String!): UserDB!
   getUserDBsUnderMyNetwork(limit: Int, offset: Int, type: String): UserDBPagination!
