@@ -5,11 +5,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserDB } from './user-db.schema';
 import { Model } from 'mongoose';
 import { CreateUserInput } from './dto/create-user.input';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class UserDbService {
   constructor(
     @InjectModel(UserDB.name) private readonly userModel: Model<UserDB>,
+    private readonly usersService: UsersService, // 👈 이 부분 추가
   ) {}
 
   async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
@@ -78,5 +80,39 @@ export class UserDbService {
 
     await user.save();
     return user;
+  }
+
+  async findUserDBsUnderMyNetwork(
+    userId: string,
+    limit = 30,
+    offset = 0,
+    type?: string,
+  ): Promise<{ users: UserDB[]; totalUsers: number }> {
+    // ⬇️ 산하 + 본인 포함된 username 리스트 가져오기
+    const usernames =
+      await this.usersService.getUsernamesUnderMyNetwork(userId);
+
+    //console.log('type : ', type);
+    //console.log('usernames : ', usernames);
+
+    const query: any = {
+      manager: { $in: usernames }, // ⬅️ 기존 userIds → usernames 로 변경
+    };
+
+    if (type) {
+      query.type = type;
+    }
+
+    const [users, totalUsers] = await Promise.all([
+      this.userModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(query).exec(),
+    ]);
+
+    return { users, totalUsers };
   }
 }

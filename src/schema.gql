@@ -50,7 +50,8 @@ type Query {
   """Get users under my network"""
   getUsersUnderMyNetwork(limit: Int! = 10, page: Int! = 1): GetUsersResponse!
   findAllUsers(limit: Int, offset: Int): UserDBPagination!
-  findUserByPhone(phonenumber: String!): UserDB
+  findUserByPhone(phonenumber: String!): UserDB!
+  getUserDBsUnderMyNetwork(limit: Int, offset: Int, type: String): UserDBPagination!
 }
 
 type Mutation {

@@ -200,6 +200,26 @@ export class UsersService implements OnModuleInit {
     }
   }
 
+  async getUsernamesUnderMyNetwork(userId: string): Promise<string[]> {
+    try {
+      const username = await this.getUserName(userId);
+      if (!username) {
+        throw new BadRequestException('Invalid referrer username.');
+      }
+
+      const descendants = await this.fetchAllDescendants(
+        this.userModel,
+        username,
+        'username',
+      );
+
+      return [username, ...descendants];
+    } catch (error) {
+      console.error('[ERROR] Failed to fetch descendant usernames:', error);
+      throw new BadRequestException('Failed to fetch descendant usernames.');
+    }
+  }
+
   async fetchAllDescendants(
     userModel: Model<User>,
     referrerUsername: string,
