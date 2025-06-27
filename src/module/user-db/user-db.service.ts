@@ -15,7 +15,7 @@ export class UserDbService {
   ) {}
 
   async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
-    console.log('createUserInput.phonenumber:', createUserInput.phonenumber);
+    //console.log('createUserInput.phonenumber:', createUserInput.phonenumber);
     const existing = await this.userModel
       .findOne({ phonenumber: createUserInput.phonenumber })
       .exec();
@@ -31,7 +31,7 @@ export class UserDbService {
   }
 
   async deleteUserById(id: string): Promise<boolean> {
-    console.log('deleteUserById == id:', id);
+    //console.log('deleteUserById == id:', id);
     const result = await this.userModel.deleteOne({ _id: id }).exec();
     return result.deletedCount === 1;
   }

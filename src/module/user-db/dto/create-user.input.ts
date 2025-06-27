@@ -28,6 +28,9 @@ export class CreateUserInput {
 
   @Field({ nullable: true })
   manager?: string;
+
+  @Field({ nullable: true })
+  incomedate?: string;
 }
 
 @ObjectType()
