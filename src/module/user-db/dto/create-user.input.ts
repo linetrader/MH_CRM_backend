@@ -18,7 +18,7 @@ export class CreateUserInput {
   incomepath?: string;
 
   @Field({ nullable: true })
-  creatorname?: string; // ✅ 추가
+  creatorname?: string;
 
   @Field({ nullable: true })
   memo?: string;

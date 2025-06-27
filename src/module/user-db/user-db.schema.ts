@@ -43,7 +43,7 @@ export class UserDB extends Document {
   manager!: string;
 
   @Prop({ type: String, required: false })
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   incomedate?: Date;
 
   @Field(() => String)
