@@ -82,6 +82,68 @@ export class UserDbService {
     return user;
   }
 
+  async findUserDBsForMainUser(
+    userId: string,
+    limit = 30,
+    offset = 0,
+    type?: string,
+  ): Promise<{ users: UserDB[]; totalUsers: number }> {
+    const user = await this.usersService.findUserById(userId);
+    if (!user || !user.username) {
+      throw new BadRequestException('Username not found for the user');
+    }
+
+    const query: any = {
+      $or: [{ manager: user.username }, { manager: '' }],
+    };
+
+    if (type) {
+      query.type = type;
+    }
+
+    const [users, totalUsers] = await Promise.all([
+      this.userModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(query).exec(),
+    ]);
+
+    return { users, totalUsers };
+  }
+
+  async findUserDBsByMyUsername(
+    userId: string,
+    limit = 30,
+    offset = 0,
+    type?: string,
+  ): Promise<{ users: UserDB[]; totalUsers: number }> {
+    const user = await this.usersService.findUserById(userId);
+    if (!user || !user.username) {
+      throw new BadRequestException('Username not found for the user');
+    }
+
+    const query: any = { manager: user.username };
+
+    if (type) {
+      query.type = type;
+    }
+
+    const [users, totalUsers] = await Promise.all([
+      this.userModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(query).exec(),
+    ]);
+
+    return { users, totalUsers };
+  }
+
   async findUserDBsUnderMyNetwork(
     userId: string,
     limit = 30,

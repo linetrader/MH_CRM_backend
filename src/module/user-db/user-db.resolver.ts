@@ -60,6 +60,46 @@ export class UserDbResolver {
   }
 
   @Query(() => UserDBPagination)
+  async getUserDBsForMainUser(
+    @Context() context: any,
+    @Args('limit', { type: () => Int, nullable: true }) limit = 30,
+    @Args('offset', { type: () => Int, nullable: true }) offset = 0,
+    @Args('type', { type: () => String, nullable: true }) type?: string,
+  ): Promise<UserDBPagination> {
+    const user = context.req.user;
+    if (!user || !user.id) {
+      throw new UnauthorizedException('User is not authenticated');
+    }
+
+    return this.userDbService.findUserDBsForMainUser(
+      user.id,
+      limit,
+      offset,
+      type,
+    );
+  }
+
+  @Query(() => UserDBPagination)
+  async getUserDBsByMyUsername(
+    @Context() context: any,
+    @Args('limit', { type: () => Int, nullable: true }) limit = 30,
+    @Args('offset', { type: () => Int, nullable: true }) offset = 0,
+    @Args('type', { type: () => String, nullable: true }) type?: string,
+  ): Promise<UserDBPagination> {
+    const user = context.req.user;
+    if (!user || !user.id) {
+      throw new UnauthorizedException('User is not authenticated');
+    }
+
+    return this.userDbService.findUserDBsByMyUsername(
+      user.id,
+      limit,
+      offset,
+      type,
+    );
+  }
+
+  @Query(() => UserDBPagination)
   async getUserDBsUnderMyNetwork(
     @Context() context: any,
     @Args('limit', { type: () => Int, nullable: true }) limit = 30,
