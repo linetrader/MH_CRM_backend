@@ -15,40 +15,48 @@ export class UserDbService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const users = await this.userModel.find().exec();
-
-    for (const user of users) {
-      const phone = user.phonenumber;
-
-      // 11자리 숫자이고 '-'가 없는 경우에만 처리
-      if (/^010\d{8}$/.test(phone)) {
-        const formattedPhone =
-          phone.slice(0, 3) + '-' + phone.slice(3, 7) + '-' + phone.slice(7);
-
-        // 이미 동일한 포맷으로 저장되어 있다면 스킵
-        if (phone === formattedPhone) continue;
-
-        user.phonenumber = formattedPhone;
-        await user.save();
-        console.log(`[Updated] ${phone} → ${formattedPhone}`);
-      }
-    }
-
-    console.log('✅ 전화번호 포맷 일괄 업데이트 완료');
+    // const users = await this.userModel.find().exec();
+    // for (const user of users) {
+    //   const phone = user.phonenumber;
+    //   // 11자리 숫자이고 '-'가 없는 경우에만 처리
+    //   if (/^010\d{8}$/.test(phone)) {
+    //     const formattedPhone =
+    //       phone.slice(0, 3) + '-' + phone.slice(3, 7) + '-' + phone.slice(7);
+    //     // 이미 동일한 포맷으로 저장되어 있다면 스킵
+    //     if (phone === formattedPhone) continue;
+    //     user.phonenumber = formattedPhone;
+    //     await user.save();
+    //     console.log(`[Updated] ${phone} → ${formattedPhone}`);
+    //   }
+    // }
+    // console.log('✅ 전화번호 포맷 일괄 업데이트 완료');
   }
 
   async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
     let phone = createUserInput.phonenumber?.trim() || '';
 
     // 숫자만 추출
-    const digitsOnly = phone.replace(/\D/g, '');
+    let digitsOnly = phone.replace(/\D/g, '');
 
-    // 11자리 숫자이면 010-XXXX-XXXX 포맷 적용
-    if (/^010\d{8}$/.test(digitsOnly)) {
-      phone = `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3, 7)}-${digitsOnly.slice(7)}`;
+    // 10으로 시작하면 010으로 교체
+    if (digitsOnly.startsWith('10')) {
+      digitsOnly = '0' + digitsOnly;
     }
 
-    // 기존에 동일한 번호가 존재하면 저장하지 않음
+    // 010으로 시작하지 않으면 앞에 붙이기
+    if (!digitsOnly.startsWith('010')) {
+      digitsOnly = '010' + digitsOnly;
+    }
+
+    // 11자리 숫자인 경우 포맷 적용
+    if (/^010\d{8}$/.test(digitsOnly)) {
+      phone = `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3, 7)}-${digitsOnly.slice(7)}`;
+    } else {
+      // 그 외는 하이픈 없이 저장
+      phone = digitsOnly;
+    }
+
+    // 중복 체크
     const existing = await this.userModel
       .findOne({ phonenumber: phone })
       .exec();
@@ -56,10 +64,10 @@ export class UserDbService implements OnModuleInit {
       return null;
     }
 
-    // 새로운 사용자 생성
+    // 저장
     const createdUser = new this.userModel({
       ...createUserInput,
-      phonenumber: phone, // 변환된 번호 사용
+      phonenumber: phone,
     });
 
     return createdUser.save();
