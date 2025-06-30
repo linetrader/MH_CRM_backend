@@ -1,6 +1,6 @@
 // src/module/user-db/user-db.service.ts
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserDB } from './user-db.schema';
 import { Model } from 'mongoose';
@@ -8,25 +8,60 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
-export class UserDbService {
+export class UserDbService implements OnModuleInit {
   constructor(
     @InjectModel(UserDB.name) private readonly userModel: Model<UserDB>,
     private readonly usersService: UsersService, // 👈 이 부분 추가
   ) {}
 
-  async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
-    //console.log('createUserInput.phonenumber:', createUserInput.phonenumber);
-    const existing = await this.userModel
-      .findOne({ phonenumber: createUserInput.phonenumber })
-      .exec();
+  async onModuleInit() {
+    const users = await this.userModel.find().exec();
 
+    for (const user of users) {
+      const phone = user.phonenumber;
+
+      // 11자리 숫자이고 '-'가 없는 경우에만 처리
+      if (/^010\d{8}$/.test(phone)) {
+        const formattedPhone =
+          phone.slice(0, 3) + '-' + phone.slice(3, 7) + '-' + phone.slice(7);
+
+        // 이미 동일한 포맷으로 저장되어 있다면 스킵
+        if (phone === formattedPhone) continue;
+
+        user.phonenumber = formattedPhone;
+        await user.save();
+        console.log(`[Updated] ${phone} → ${formattedPhone}`);
+      }
+    }
+
+    console.log('✅ 전화번호 포맷 일괄 업데이트 완료');
+  }
+
+  async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
+    let phone = createUserInput.phonenumber?.trim() || '';
+
+    // 숫자만 추출
+    const digitsOnly = phone.replace(/\D/g, '');
+
+    // 11자리 숫자이면 010-XXXX-XXXX 포맷 적용
+    if (/^010\d{8}$/.test(digitsOnly)) {
+      phone = `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3, 7)}-${digitsOnly.slice(7)}`;
+    }
+
+    // 기존에 동일한 번호가 존재하면 저장하지 않음
+    const existing = await this.userModel
+      .findOne({ phonenumber: phone })
+      .exec();
     if (existing) {
-      // 중복된 휴대폰 번호가 있으면 생성하지 않음
-      //throw new BadRequestException('[SKIP] 중복된 번호');
       return null;
     }
 
-    const createdUser = new this.userModel(createUserInput);
+    // 새로운 사용자 생성
+    const createdUser = new this.userModel({
+      ...createUserInput,
+      phonenumber: phone, // 변환된 번호 사용
+    });
+
     return createdUser.save();
   }
 
