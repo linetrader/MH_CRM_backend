@@ -14,23 +14,7 @@ export class UserDbService implements OnModuleInit {
     private readonly usersService: UsersService, // 👈 이 부분 추가
   ) {}
 
-  async onModuleInit() {
-    // const users = await this.userModel.find().exec();
-    // for (const user of users) {
-    //   const phone = user.phonenumber;
-    //   // 11자리 숫자이고 '-'가 없는 경우에만 처리
-    //   if (/^010\d{8}$/.test(phone)) {
-    //     const formattedPhone =
-    //       phone.slice(0, 3) + '-' + phone.slice(3, 7) + '-' + phone.slice(7);
-    //     // 이미 동일한 포맷으로 저장되어 있다면 스킵
-    //     if (phone === formattedPhone) continue;
-    //     user.phonenumber = formattedPhone;
-    //     await user.save();
-    //     console.log(`[Updated] ${phone} → ${formattedPhone}`);
-    //   }
-    // }
-    // console.log('✅ 전화번호 포맷 일괄 업데이트 완료');
-  }
+  async onModuleInit() {}
 
   async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
     let phone = createUserInput.phonenumber?.trim() || '';
@@ -217,6 +201,92 @@ export class UserDbService implements OnModuleInit {
         .exec(),
       this.userModel.countDocuments(query).exec(),
     ]);
+
+    return { users, totalUsers };
+  }
+
+  async searchUserDBsUnderMyNetworkWithOr(
+    userId: string,
+    limit = 30,
+    offset = 0,
+    filters: {
+      username?: string;
+      phonenumber?: string;
+      incomepath?: string;
+      creatorname?: string;
+      manager?: string;
+      type?: string;
+    },
+  ): Promise<{ users: UserDB[]; totalUsers: number }> {
+    // console.log(
+    //   'searchUserDBsUnderMyNetworkWithOr called with filters:',
+    //   filters,
+    // );
+    // 1. 산하 username 목록 조회
+    const usernames =
+      await this.usersService.getUsernamesUnderMyNetwork(userId);
+
+    // 2. 기본 조건: 산하 유저만 조회
+    const baseCondition: any = {
+      manager: { $in: usernames },
+    };
+
+    // 3. 필터된 OR 조건 구성
+    const orConditions: any[] = [];
+
+    if (filters.username) {
+      orConditions.push({
+        username: { $regex: filters.username, $options: 'i' },
+      });
+    }
+    if (filters.phonenumber) {
+      orConditions.push({
+        phonenumber: { $regex: filters.phonenumber, $options: 'i' },
+      });
+    }
+    if (filters.incomepath) {
+      orConditions.push({
+        incomepath: { $regex: filters.incomepath, $options: 'i' },
+      });
+    }
+    if (filters.creatorname) {
+      orConditions.push({
+        creatorname: { $regex: filters.creatorname, $options: 'i' },
+      });
+    }
+    if (filters.manager) {
+      orConditions.push({
+        manager: { $regex: filters.manager, $options: 'i' },
+      });
+    }
+
+    // 최종 쿼리: AND (산하 조건 + optional type) + OR (검색 조건)
+    const query: any = {
+      ...baseCondition,
+    };
+
+    if (filters.type) {
+      query.type = filters.type;
+    }
+
+    if (orConditions.length > 0) {
+      query.$or = orConditions;
+    }
+
+    // 4. DB 조회
+    const [users, totalUsers] = await Promise.all([
+      this.userModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(query).exec(),
+    ]);
+
+    // console.log('searchUserDBsUnderMyNetworkWithOr query:', query);
+    // console.log('searchUserDBsUnderMyNetworkWithOr users:', users);
+    // console.log('searchUserDBsUnderMyNetworkWithOr totalUsers:', totalUsers);
 
     return { users, totalUsers };
   }

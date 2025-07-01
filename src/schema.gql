@@ -58,6 +58,7 @@ type Query {
   getUserDBsForMainUser(limit: Int, offset: Int, type: String): UserDBPagination!
   getUserDBsByMyUsername(limit: Int, offset: Int, type: String): UserDBPagination!
   getUserDBsUnderMyNetwork(limit: Int, offset: Int, type: String): UserDBPagination!
+  searchUserDBsUnderMyNetworkWithOr(limit: Int, offset: Int, username: String, phonenumber: String, incomepath: String, creatorname: String, manager: String, type: String): UserDBPagination!
 }
 
 type Mutation {
