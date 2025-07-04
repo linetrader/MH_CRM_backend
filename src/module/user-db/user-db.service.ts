@@ -14,7 +14,29 @@ export class UserDbService implements OnModuleInit {
     private readonly usersService: UsersService, // 👈 이 부분 추가
   ) {}
 
-  async onModuleInit() {}
+  async onModuleInit() {
+    try {
+      const usersToUpdate = await this.userModel.find({
+        $or: [
+          { memo: { $exists: false } },
+          { memo: null },
+          { memo: '' },
+          { memo: ' ' },
+        ],
+      });
+
+      for (const user of usersToUpdate) {
+        user.memo = '1.';
+        await user.save();
+      }
+
+      console.log(
+        `🛠️ memo가 비어 있던 사용자 ${usersToUpdate.length}명 업데이트 완료`,
+      );
+    } catch (error) {
+      console.error('❌ onModuleInit 메모 초기화 중 오류 발생:', error);
+    }
+  }
 
   async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
     let phone = createUserInput.phonenumber?.trim() || '';
@@ -40,6 +62,9 @@ export class UserDbService implements OnModuleInit {
       phone = digitsOnly;
     }
 
+    // memo가 비어 있으면 "1." 기본값 설정
+    const memo = createUserInput.memo?.trim() || '1.';
+
     // 중복 체크
     const existing = await this.userModel
       .findOne({ phonenumber: phone })
@@ -52,6 +77,7 @@ export class UserDbService implements OnModuleInit {
     const createdUser = new this.userModel({
       ...createUserInput,
       phonenumber: phone,
+      memo, // memo를 직접 지정
     });
 
     return createdUser.save();
@@ -113,11 +139,18 @@ export class UserDbService implements OnModuleInit {
     userId: string,
     limit = 30,
     offset = 0,
+    includeSelf = true,
     type?: string,
   ): Promise<{ users: UserDB[]; totalUsers: number }> {
     const user = await this.usersService.findUserById(userId);
     if (!user || !user.username) {
       throw new BadRequestException('Username not found for the user');
+    }
+
+    if (includeSelf) {
+      console.log(
+        'includeSelf is true, fetching users under my network including self',
+      );
     }
 
     const query: any = {
@@ -145,11 +178,18 @@ export class UserDbService implements OnModuleInit {
     userId: string,
     limit = 30,
     offset = 0,
+    includeSelf = true,
     type?: string,
   ): Promise<{ users: UserDB[]; totalUsers: number }> {
     const user = await this.usersService.findUserById(userId);
     if (!user || !user.username) {
       throw new BadRequestException('Username not found for the user');
+    }
+
+    if (includeSelf) {
+      console.log(
+        'includeSelf is true, fetching users under my network including self',
+      );
     }
 
     const query: any = { manager: user.username };
@@ -175,11 +215,16 @@ export class UserDbService implements OnModuleInit {
     userId: string,
     limit = 30,
     offset = 0,
+    includeSelf = true,
     type?: string,
   ): Promise<{ users: UserDB[]; totalUsers: number }> {
     // ⬇️ 산하 + 본인 포함된 username 리스트 가져오기
-    const usernames =
-      await this.usersService.getUsernamesUnderMyNetwork(userId);
+    let usernames: string[] = [];
+    if (includeSelf) {
+      usernames = await this.usersService.getUsernamesUnderMyNetwork(userId);
+    } else {
+      usernames = await this.usersService.getUsernamesFromMyNetwork(userId);
+    }
 
     //console.log('type : ', type);
     //console.log('usernames : ', usernames);

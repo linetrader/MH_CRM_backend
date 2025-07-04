@@ -96,6 +96,8 @@ export class UserDbResolver {
     @Context() context: any,
     @Args('limit', { type: () => Int, nullable: true }) limit = 30,
     @Args('offset', { type: () => Int, nullable: true }) offset = 0,
+    @Args('includeSelf', { type: () => Boolean, nullable: true })
+    includeSelf = true,
     @Args('type', { type: () => String, nullable: true }) type?: string,
   ): Promise<UserDBPagination> {
     const user = context.req.user;
@@ -107,6 +109,7 @@ export class UserDbResolver {
       user.id,
       limit,
       offset,
+      includeSelf,
       type,
     );
   }
@@ -116,6 +119,8 @@ export class UserDbResolver {
     @Context() context: any,
     @Args('limit', { type: () => Int, nullable: true }) limit = 30,
     @Args('offset', { type: () => Int, nullable: true }) offset = 0,
+    @Args('includeSelf', { type: () => Boolean, nullable: true })
+    includeSelf = true,
     @Args('type', { type: () => String, nullable: true }) type?: string,
   ): Promise<UserDBPagination> {
     const user = context.req.user;
@@ -127,6 +132,7 @@ export class UserDbResolver {
       user.id,
       limit,
       offset,
+      includeSelf,
       type,
     );
   }
@@ -136,6 +142,8 @@ export class UserDbResolver {
     @Context() context: any,
     @Args('limit', { type: () => Int, nullable: true }) limit = 30,
     @Args('offset', { type: () => Int, nullable: true }) offset = 0,
+    @Args('includeSelf', { type: () => Boolean, nullable: true })
+    includeSelf = true,
     @Args('type', { type: () => String, nullable: true }) type?: string,
   ): Promise<UserDBPagination> {
     // 1️⃣ 인증된 사용자 가져오기
@@ -148,6 +156,7 @@ export class UserDbResolver {
       user.id,
       limit,
       offset,
+      includeSelf, // ✅ 올바른 위치에 boolean 값 전달
       type,
     );
   }
