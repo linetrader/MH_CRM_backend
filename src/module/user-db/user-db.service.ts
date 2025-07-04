@@ -14,29 +14,7 @@ export class UserDbService implements OnModuleInit {
     private readonly usersService: UsersService, // 👈 이 부분 추가
   ) {}
 
-  async onModuleInit() {
-    try {
-      const usersToUpdate = await this.userModel.find({
-        $or: [
-          { memo: { $exists: false } },
-          { memo: null },
-          { memo: '' },
-          { memo: ' ' },
-        ],
-      });
-
-      for (const user of usersToUpdate) {
-        user.memo = '1.';
-        await user.save();
-      }
-
-      console.log(
-        `🛠️ memo가 비어 있던 사용자 ${usersToUpdate.length}명 업데이트 완료`,
-      );
-    } catch (error) {
-      console.error('❌ onModuleInit 메모 초기화 중 오류 발생:', error);
-    }
-  }
+  async onModuleInit() {}
 
   async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
     let phone = createUserInput.phonenumber?.trim() || '';
