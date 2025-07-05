@@ -57,7 +57,7 @@ export class UsersService implements OnModuleInit {
     return this.userModel.findById(userId).exec();
   }
 
-  async getUserName(userId: string): Promise<string> {
+  async findUserNameByID(userId: string): Promise<string> {
     if (!userId || typeof userId !== 'string') {
       throw new BadRequestException('Invalid user ID');
     }
@@ -157,7 +157,7 @@ export class UsersService implements OnModuleInit {
     offset: number,
   ): Promise<{ users: User[]; totalUsers: number }> {
     try {
-      const username = await this.getUserName(userId);
+      const username = await this.findUserNameByID(userId);
       if (!username) {
         throw new BadRequestException('Invalid referrer username.');
       }
@@ -188,7 +188,7 @@ export class UsersService implements OnModuleInit {
 
   async getUserIdsUnderMyNetwork(userId: string): Promise<string[]> {
     try {
-      const username = await this.getUserName(userId);
+      const username = await this.findUserNameByID(userId);
       if (!username) {
         throw new BadRequestException('Invalid referrer username.');
       }
@@ -202,7 +202,7 @@ export class UsersService implements OnModuleInit {
 
   async getUsernamesUnderMyNetwork(userId: string): Promise<string[]> {
     try {
-      const username = await this.getUserName(userId);
+      const username = await this.findUserNameByID(userId);
       if (!username) {
         throw new BadRequestException('Invalid referrer username.');
       }
@@ -222,7 +222,7 @@ export class UsersService implements OnModuleInit {
 
   async getUsernamesFromMyNetwork(userId: string): Promise<string[]> {
     try {
-      const username = await this.getUserName(userId);
+      const username = await this.findUserNameByID(userId);
       if (!username) {
         throw new BadRequestException('Invalid referrer username.');
       }

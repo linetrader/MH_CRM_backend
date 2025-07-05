@@ -20,7 +20,7 @@ export class UserDbResolver {
       throw new UnauthorizedException('User is not authenticated');
     }
 
-    return this.userDbService.create(createUserInput);
+    return this.userDbService.create(user.id, createUserInput);
   }
 
   @Mutation(() => Boolean)

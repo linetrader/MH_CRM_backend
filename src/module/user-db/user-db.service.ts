@@ -14,9 +14,25 @@ export class UserDbService implements OnModuleInit {
     private readonly usersService: UsersService, // 👈 이 부분 추가
   ) {}
 
-  async onModuleInit() {}
+  async onModuleInit() {
+    try {
+      const updated = await this.userModel.updateMany(
+        { $or: [{ manager: null }, { manager: '' }] }, // manager가 null 또는 빈 문자열인 경우
+        { $set: { manager: '김명한' } },
+      );
 
-  async create(createUserInput: CreateUserInput): Promise<UserDB | null> {
+      console.log(
+        `[UserDbService] manager 비어있는 ${updated.modifiedCount}건을 '김명한'으로 초기화`,
+      );
+    } catch (error) {
+      console.error('[UserDbService] manager 초기화 실패:', error);
+    }
+  }
+
+  async create(
+    userId: string,
+    createUserInput: CreateUserInput,
+  ): Promise<UserDB | null> {
     let phone = createUserInput.phonenumber?.trim() || '';
 
     // 숫자만 추출
@@ -42,6 +58,10 @@ export class UserDbService implements OnModuleInit {
 
     // memo가 비어 있으면 "1." 기본값 설정
     const memo = createUserInput.memo?.trim() || '1.';
+
+    // manager가 비어 있으면 userId로 username을 가져와서 설정
+    const username = await this.usersService.findUserNameByID(userId);
+    createUserInput.manager = createUserInput.manager?.trim() || username;
 
     // 중복 체크
     const existing = await this.userModel
@@ -76,7 +96,7 @@ export class UserDbService implements OnModuleInit {
     const [users, totalUsers] = await Promise.all([
       this.userModel
         .find()
-        .sort({ updatedAt: 1 }) // 최신순
+        .sort({ createdAt: -1 }) // 최신순
         .skip(offset)
         .limit(limit)
         .exec(),
@@ -168,10 +188,7 @@ export class UserDbService implements OnModuleInit {
     includeSelf = true,
     type?: string,
   ): Promise<{ users: UserDB[]; totalUsers: number }> {
-    const user = await this.usersService.findUserById(userId);
-    if (!user || !user.username) {
-      throw new BadRequestException('Username not found for the user');
-    }
+    const userName = await this.usersService.findUserNameByID(userId);
 
     if (includeSelf) {
       console.log(
@@ -179,7 +196,7 @@ export class UserDbService implements OnModuleInit {
       );
     }
 
-    const query: any = { manager: user.username };
+    const query: any = { manager: userName };
 
     if (type) {
       query.type = type;
