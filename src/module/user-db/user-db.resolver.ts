@@ -105,13 +105,7 @@ export class UserDbResolver {
       throw new UnauthorizedException('User is not authenticated');
     }
 
-    return this.userDbService.findUserDBsForMainUser(
-      user.id,
-      limit,
-      offset,
-      includeSelf,
-      type,
-    );
+    return this.userDbService.findAll(limit, offset, includeSelf, type);
   }
 
   @Query(() => UserDBPagination)

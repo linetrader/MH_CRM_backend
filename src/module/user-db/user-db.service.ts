@@ -70,16 +70,25 @@ export class UserDbService implements OnModuleInit {
   async findAll(
     limit = 30,
     offset = 0,
+    includeSelf = true,
+    type?: string,
   ): Promise<{ users: UserDB[]; totalUsers: number }> {
     const [users, totalUsers] = await Promise.all([
       this.userModel
         .find()
-        .sort({ createdAt: -1 }) // 최신순
+        .sort({ updatedAt: 1 }) // 최신순
         .skip(offset)
         .limit(limit)
         .exec(),
       this.userModel.countDocuments().exec(),
     ]);
+
+    if (includeSelf) {
+      console.log(
+        'includeSelf is true, fetching all users including self',
+        type,
+      );
+    }
 
     return { users, totalUsers };
   }
@@ -307,9 +316,9 @@ export class UserDbService implements OnModuleInit {
       this.userModel.countDocuments(query).exec(),
     ]);
 
-    // console.log('searchUserDBsUnderMyNetworkWithOr query:', query);
-    // console.log('searchUserDBsUnderMyNetworkWithOr users:', users);
-    // console.log('searchUserDBsUnderMyNetworkWithOr totalUsers:', totalUsers);
+    //console.log('searchUserDBsUnderMyNetworkWithOr query:', query);
+    //console.log('searchUserDBsUnderMyNetworkWithOr users:', users);
+    //console.log('searchUserDBsUnderMyNetworkWithOr totalUsers:', totalUsers);
 
     return { users, totalUsers };
   }
