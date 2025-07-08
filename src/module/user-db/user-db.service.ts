@@ -15,6 +15,12 @@ export class UserDbService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    // 초기화 로직
+    console.log('[UserDbService] onModuleInit called');
+    //await this.initManager(); // manager 필드 초기화
+  }
+
+  async initManager() {
     try {
       const updated = await this.userModel.updateMany(
         { $or: [{ manager: null }, { manager: '' }] }, // manager가 null 또는 빈 문자열인 경우
