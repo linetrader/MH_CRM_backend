@@ -17,22 +17,50 @@ export class UserDbService implements OnModuleInit {
   async onModuleInit() {
     // 초기화 로직
     console.log('[UserDbService] onModuleInit called');
-    await this.initManager(); // manager 필드 초기화
+    await this.initText();
+    await this.initMemo();
   }
 
-  async initManager() {
-    try {
-      const updated = await this.userModel.updateMany(
-        { $or: [{ manager: null }, { manager: '김명한' }] }, // manager가 null 또는 빈 문자열인 경우
-        { $set: { manager: '조이사' } },
-      );
+  async initText() {
+    console.log('[initText] 시작');
 
-      console.log(
-        `[UserDbService] manager 비어있는 ${updated.modifiedCount}건을 '조이사'으로 초기화`,
-      );
-    } catch (error) {
-      console.error('[UserDbService] manager 초기화 실패:', error);
+    const users = await this.userModel.find().exec();
+
+    let updatedCount = 0;
+
+    for (const user of users) {
+      if (user.memo && (!user.sms || user.sms.trim() === '')) {
+        user.sms = user.memo;
+        await user.save();
+        updatedCount++;
+      }
     }
+
+    console.log(
+      `[initText] 완료: ${updatedCount}명의 사용자 sms 필드를 업데이트했습니다.`,
+    );
+  }
+
+  async initMemo() {
+    console.log('[initMemo] 시작');
+
+    const users = await this.userModel.find().exec();
+    let updatedCount = 0;
+
+    for (const user of users) {
+      if (user.memo && (!user.sms || user.sms.trim() === '')) {
+        user.sms = user.memo;
+      }
+
+      // memo 필드는 무조건 "1."으로 초기화
+      user.memo = '1.';
+      await user.save();
+      updatedCount++;
+    }
+
+    console.log(
+      `[initMemo] 완료: ${updatedCount}명의 사용자 memo 필드를 초기화하고 sms 필드를 업데이트했습니다.`,
+    );
   }
 
   async create(
@@ -130,7 +158,7 @@ export class UserDbService implements OnModuleInit {
     const updatableFields: Array<keyof UserDB> = [
       'username',
       'phonenumber',
-      'sex',
+      'sms',
       'incomepath',
       'memo',
       'type',

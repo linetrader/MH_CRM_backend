@@ -20,7 +20,7 @@ export class UserDB extends Document {
 
   @Prop({ type: String, required: false })
   @Field({ nullable: true })
-  sex?: string; // male, female
+  sms?: string; // 문자 내역
 
   @Prop({ type: String, required: false })
   @Field({ nullable: true })

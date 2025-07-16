@@ -29,7 +29,7 @@ type UserDB {
   id: ID!
   username: String
   phonenumber: String!
-  sex: String
+  sms: String
   incomepath: String
   creatorname: String
   memo: String
@@ -75,7 +75,7 @@ type Mutation {
   changePassword(newPassword: String!): String!
   createUserDB(createUserInput: CreateUserInput!): UserDB
   deleteUserDB(id: String!): Boolean!
-  updateUserDB(id: String!, username: String, phonenumber: String, sex: String, incomepath: String, memo: String, type: String, manager: String): UserDB!
+  updateUserDB(id: String!, username: String, phonenumber: String, sms: String, incomepath: String, memo: String, type: String, manager: String): UserDB!
 }
 
 input CreateUserInput {

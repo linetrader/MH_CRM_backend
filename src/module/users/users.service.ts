@@ -102,12 +102,14 @@ export class UsersService implements OnModuleInit {
       $or: [{ email }, { username }],
     });
     if (existingUser) {
+      console.log('[ERROR] User already exists:', existingUser);
+      // 이메일 또는 사용자 이름이 이미 존재하는
       if (existingUser.email === email) {
         throw new BadRequestException('Email already exists');
       }
-      // if (existingUser.username === username) {
-      //   throw new BadRequestException('Username already exists');
-      // }
+      if (existingUser.username === username) {
+        throw new BadRequestException('Username already exists');
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

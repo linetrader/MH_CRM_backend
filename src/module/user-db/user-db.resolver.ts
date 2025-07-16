@@ -42,7 +42,7 @@ export class UserDbResolver {
     @Args('id') id: string,
     @Args('username', { nullable: true }) username?: string,
     @Args('phonenumber', { nullable: true }) phonenumber?: string,
-    @Args('sex', { nullable: true }) sex?: string,
+    @Args('sms', { nullable: true }) sms?: string,
     @Args('incomepath', { nullable: true }) incomepath?: string,
     @Args('memo', { nullable: true }) memo?: string,
     @Args('type', { nullable: true }) type?: string,
@@ -56,7 +56,7 @@ export class UserDbResolver {
     return this.userDbService.updateUserById(id, {
       username,
       phonenumber,
-      sex,
+      sms,
       incomepath,
       memo,
       type,
