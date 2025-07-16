@@ -17,8 +17,8 @@ export class UserDbService implements OnModuleInit {
   async onModuleInit() {
     // 초기화 로직
     console.log('[UserDbService] onModuleInit called');
-    await this.initText();
-    await this.initMemo();
+    //await this.initText();
+    //await this.initMemo();
   }
 
   async initText() {
