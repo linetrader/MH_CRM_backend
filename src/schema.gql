@@ -54,7 +54,6 @@ type Query {
   """Get usernames under my network"""
   getUsernamesUnderMyNetwork: [String!]!
   findAllUsers(limit: Int, offset: Int): UserDBPagination!
-  findUserByPhone(phonenumber: String!): UserDB!
   getUserDBsForMainUser(limit: Int, offset: Int, includeSelf: Boolean, type: String): UserDBPagination!
   getUserDBsByMyUsername(limit: Int, offset: Int, includeSelf: Boolean, type: String): UserDBPagination!
   getUserDBsUnderMyNetwork(limit: Int, offset: Int, includeSelf: Boolean, type: String): UserDBPagination!
@@ -81,7 +80,7 @@ type Mutation {
 input CreateUserInput {
   username: String
   phonenumber: String!
-  sex: String
+  sms: String
   incomepath: String
   creatorname: String
   memo: String

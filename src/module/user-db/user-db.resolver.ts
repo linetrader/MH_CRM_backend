@@ -78,19 +78,6 @@ export class UserDbResolver {
     return this.userDbService.findAll(limit, offset);
   }
 
-  @Query(() => UserDB, { name: 'findUserByPhone' })
-  async findOneByPhone(
-    @Context() context: any,
-    @Args('phonenumber') phonenumber: string,
-  ): Promise<UserDB | null> {
-    const user = context.req.user;
-    if (!user || !user.id) {
-      throw new UnauthorizedException('User is not authenticated');
-    }
-
-    return this.userDbService.findOneByPhone(phonenumber);
-  }
-
   @Query(() => UserDBPagination)
   async getUserDBsForMainUser(
     @Context() context: any,

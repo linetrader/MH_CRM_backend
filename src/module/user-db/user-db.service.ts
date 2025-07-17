@@ -17,8 +17,29 @@ export class UserDbService implements OnModuleInit {
   async onModuleInit() {
     // 초기화 로직
     console.log('[UserDbService] onModuleInit called');
+    await this.initManager();
     //await this.initText();
     //await this.initMemo();
+  }
+
+  async initManager() {
+    console.log('[initManager] 시작');
+
+    const users = await this.userModel.find().exec();
+    let updatedCount = 0;
+
+    for (const user of users) {
+      // manager가 없거나 빈 문자열이면 기본값 설정
+      if (!user.manager || user.manager.trim() === '') {
+        user.manager = '김명한';
+        await user.save();
+        updatedCount++;
+      }
+    }
+
+    console.log(
+      `[initManager] 완료: ${updatedCount}명의 사용자 manager 필드를 '김명한'으로 초기화했습니다.`,
+    );
   }
 
   async initText() {
@@ -97,11 +118,14 @@ export class UserDbService implements OnModuleInit {
     const username = await this.usersService.findUserNameByID(userId);
     createUserInput.manager = createUserInput.manager?.trim() || username;
 
+    //console.log('createUserInput:', createUserInput);
+
     // 중복 체크
     const existing = await this.userModel
       .findOne({ phonenumber: phone })
       .exec();
     if (existing) {
+      //console.log('User with this phone number already exists:', phone);
       return null;
     }
 
@@ -145,10 +169,6 @@ export class UserDbService implements OnModuleInit {
     }
 
     return { users, totalUsers };
-  }
-
-  async findOneByPhone(phonenumber: string): Promise<UserDB | null> {
-    return this.userModel.findOne({ phonenumber }).exec();
   }
 
   async updateUserById(id: string, updates: Partial<UserDB>): Promise<UserDB> {
@@ -367,9 +387,9 @@ export class UserDbService implements OnModuleInit {
       this.userModel.countDocuments(query).exec(),
     ]);
 
-    //console.log('searchUserDBsUnderMyNetworkWithOr query:', query);
-    //console.log('searchUserDBsUnderMyNetworkWithOr users:', users);
-    //console.log('searchUserDBsUnderMyNetworkWithOr totalUsers:', totalUsers);
+    // console.log('searchUserDBsUnderMyNetworkWithOr query:', query);
+    // console.log('searchUserDBsUnderMyNetworkWithOr users:', users);
+    // console.log('searchUserDBsUnderMyNetworkWithOr totalUsers:', totalUsers);
 
     return { users, totalUsers };
   }

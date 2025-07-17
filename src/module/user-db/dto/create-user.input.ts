@@ -12,7 +12,7 @@ export class CreateUserInput {
   phonenumber!: string;
 
   @Field({ nullable: true })
-  sex?: string;
+  sms?: string;
 
   @Field({ nullable: true })
   incomepath?: string;
